@@ -22,15 +22,19 @@ COPY pyproject.toml .
 COPY src/ src/
 COPY config/ config/
 COPY examples/ examples/
-COPY simple_cli.py .
-COPY run_mcp_server.py .
+COPY scan.py .
 COPY README.md .
+
+# 创建用户和目录
+RUN useradd -m -u 1000 scanner
 
 # 安装Python依赖
 RUN pip install --no-cache-dir -e .
 
-# 创建非root用户
-RUN useradd -m -u 1000 scanner
+# 创建必要目录并设置权限
+RUN mkdir -p /app/logs /app/scan_results && \
+    chown -R scanner:scanner /app
+
 USER scanner
 
 # 设置环境变量

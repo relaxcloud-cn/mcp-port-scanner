@@ -1,0 +1,53 @@
+services:
+  # MCP服务器模式 - 用于Cursor集成
+  mcp-port-scanner:
+    build: .
+    container_name: mcp-port-scanner
+    volumes:
+      - ./scan_results:/app/scan_results
+      - ./config:/app/config
+    environment:
+      - PYTHONPATH=/app/src
+      - LOG_LEVEL=INFO
+    command: tail -f /dev/null
+    restart: unless-stopped
+    networks:
+      - scanner-network
+
+  # HTTP服务器模式 - 用于Web界面和API
+  mcp-port-scanner-http:
+    build: .
+    container_name: mcp-port-scanner-http
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./scan_results:/app/scan_results
+      - ./config:/app/config
+    environment:
+      - PYTHONPATH=/app/src
+      - LOG_LEVEL=INFO
+    command: python -m mcp_port_scanner.cli server --mode http --host 0.0.0.0 --port 8080
+    restart: unless-stopped
+    networks:
+      - scanner-network
+
+  # 命令行模式 - 用于一次性扫描任务
+  mcp-port-scanner-cli:
+    build: .
+    container_name: mcp-port-scanner-cli
+    volumes:
+      - ./scan_results:/app/scan_results
+      - ./config:/app/config
+    environment:
+      - PYTHONPATH=/app/src
+    command: tail -f /dev/null  # 保持容器运行
+    networks:
+      - scanner-network
+
+networks:
+  scanner-network:
+    driver: bridge
+
+volumes:
+  scan_results:
+  config: 
