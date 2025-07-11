@@ -1,0 +1,39 @@
+# MCP端口扫描服务默认配置
+
+[scan]
+# RustScan配置
+rustscan_timeout = 3000  # 超时时间(ms)
+rustscan_batch_size = 4500  # 批处理大小
+rustscan_ports = "1-1000"  # 扫描端口范围
+
+# Banner获取配置
+banner_timeout = 5.0  # Banner获取超时时间(秒)
+banner_max_bytes = 1024  # Banner最大字节数
+
+# HTTP探测配置
+http_timeout = 10.0  # HTTP请求超时时间(秒)
+http_max_redirects = 3  # HTTP最大重定向次数
+http_user_agent = "Mozilla/5.0 (compatible; PortScanner/1.0)"
+
+# 目录扫描配置
+admin_scan_enabled = true  # 是否启用管理目录扫描
+admin_scan_threads = 10  # 目录扫描并发数
+admin_scan_timeout = 5.0  # 目录扫描超时时间(秒)
+
+# 通用配置
+max_concurrent_targets = 5  # 最大并发扫描目标数
+enable_logging = true  # 是否启用日志
+log_level = "INFO"  # 日志级别
+
+[mcp]
+# MCP服务器配置
+server_name = "port-scanner"
+transport_type = "stdio"  # 传输类型: stdio, websocket
+bind_address = "127.0.0.1"  # 绑定地址(websocket模式)
+bind_port = 8080  # 绑定端口(websocket模式)
+
+[output]
+# 输出配置
+results_dir = "scan_results"  # 结果输出目录
+log_dir = "logs"  # 日志目录
+export_formats = ["json", "csv"]  # 支持的导出格式 

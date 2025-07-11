@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-port-scanner"
+version = "0.1.0"
+description = "一个基于MCP协议的智能分层端口扫描服务，专为AI助手和开发工具设计。"
+authors = [
+    {name = "Sky", email = "sky@example.com"}
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+keywords = ["port-scanner", "mcp", "security", "network", "scanner", "rustscan", "ai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Topic :: Security",
+    "Topic :: System :: Networking",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "mcp>=1.0,<2.0",
+    "asyncio-pool>=0.6.0",
+    "pydantic>=2.0.0",
+    "loguru>=0.7.0",
+    "click>=8.0.0",
+    "rich>=13.0.0",
+    "httpx>=0.25.0",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+
+[project.scripts]
+mcp-port-scanner = "mcp_port_scanner.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/sky/mcp-port-scanner"
+Repository = "https://github.com/sky/mcp-port-scanner"
+Documentation = "https://github.com/sky/mcp-port-scanner/blob/main/docs/README.md"
+"Bug Tracker" = "https://github.com/sky/mcp-port-scanner/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true 

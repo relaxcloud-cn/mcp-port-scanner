@@ -1,0 +1,14 @@
+{
+  "target": "google.com",
+  "open_ports": [
+    {
+      "port": 443,
+      "protocol": "tcp",
+      "service": "unknown",
+      "version": null,
+      "banner": null
+    }
+  ],
+  "http_services": [],
+  "admin_directories": [],
+  "scan_result": 

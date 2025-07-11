@@ -1,0 +1,45 @@
+{
+  "mcpServers": {
+    "port-scanner": {
+      "command": "python",
+      "args": [
+        "-m", 
+        "mcp_port_scanner.cli",
+        "server",
+        "--mode", "cursor",
+        "--host", "127.0.0.1",
+        "--port", "8080"
+      ],
+      "cwd": "/Users/sky/Prism/mcp-port-scanner",
+      "env": {
+        "PYTHONPATH": "src"
+      }
+    },
+    "port-scanner-http": {
+      "command": "python",
+      "args": [
+        "-m", 
+        "mcp_port_scanner.cli",
+        "server",
+        "--mode", "http",
+        "--host", "127.0.0.1",
+        "--port", "8080"
+      ],
+      "cwd": "/Users/sky/Prism/mcp-port-scanner",
+      "env": {
+        "PYTHONPATH": "src"
+      }
+    },
+    "port-scanner-stdio": {
+      "command": "python",
+      "args": [
+        "-m", 
+        "mcp_port_scanner.mcp_server"
+      ],
+      "cwd": "/Users/sky/Prism/mcp-port-scanner",
+      "env": {
+        "PYTHONPATH": "src"
+      }
+    }
+  }
+} 
