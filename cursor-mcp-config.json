@@ -10,7 +10,7 @@
         "-m",
         "mcp_port_scanner.mcp_server"
       ],
-      "cwd": "D:\\ProjectCode\\mcp-port-scanner"
+      "cwd": "path\\to\\mcp-port-scanner"
     }
   }
 } 

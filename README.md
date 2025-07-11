@@ -62,7 +62,9 @@ python -m mcp_port_scanner scan 192.168.1.1 -p 80,443,8080
 python -m mcp_port_scanner batch 192.168.1.1 192.168.1.2 192.168.1.3
 ```
 
-### 3. Cursor集成
+### 3. MCP集成
+
+**方式一：Cursor集成（stdio模式）**
 
 编辑 `~/.cursor/mcp.json`:
 
@@ -78,7 +80,17 @@ python -m mcp_port_scanner batch 192.168.1.1 192.168.1.2 192.168.1.3
 }
 ```
 
-重启Cursor后即可使用。
+**方式二：SSE模式（支持远程访问）**
+
+```bash
+# 启动SSE服务
+docker-compose up -d mcp-port-scanner-sse
+
+# 服务运行在 http://localhost:3000
+# 支持多会话、远程访问、HTTP防火墙友好
+```
+
+详见 [MCP SSE配置指南](./MCP_SSE_SETUP.md)
 
 ## 📚 功能特性
 
@@ -113,6 +125,8 @@ else:
 - 📗 [开发文档](./docs/DEVELOPMENT_GUIDE.md) - 架构设计与扩展开发
 - 📙 [API参考](./docs/API_REFERENCE.md) - 详细的API文档和示例
 - 📕 [架构设计](./docs/ARCHITECTURE.md) - 深入了解设计理念
+- 📓 [MCP SSE配置](./MCP_SSE_SETUP.md) - SSE传输模式配置指南
+- 📔 [Cursor配置](./CURSOR_SETUP.md) - Cursor编辑器集成指南
 
 ## 🔧 使用示例
 

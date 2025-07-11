@@ -1,5 +1,5 @@
 services:
-  # MCP服务器模式 - 用于Cursor集成
+  # MCP端口扫描服务器 - 标准MCP stdio协议
   mcp-port-scanner:
     build: .
     container_name: mcp-port-scanner
@@ -9,29 +9,33 @@ services:
     environment:
       - PYTHONPATH=/app/src
       - LOG_LEVEL=INFO
-    command: tail -f /dev/null
+    command: tail -f /dev/null  # 保持容器运行，用于MCP stdio服务
     restart: unless-stopped
     networks:
       - scanner-network
 
-  # HTTP服务器模式 - 用于Web界面和API
-  mcp-port-scanner-http:
+  # MCP SSE服务器 - 将stdio MCP转换为HTTP/SSE接口
+  mcp-port-scanner-sse:
     build: .
-    container_name: mcp-port-scanner-http
+    container_name: mcp-port-scanner-sse
     ports:
-      - "8080:8080"
+      - "3000:3000"
     volumes:
       - ./scan_results:/app/scan_results
       - ./config:/app/config
     environment:
       - PYTHONPATH=/app/src
+      - MCP_BIND_HOST=0.0.0.0
+      - MCP_PORT=3000
       - LOG_LEVEL=INFO
-    command: python -m mcp_port_scanner.cli server --mode http --host 0.0.0.0 --port 8080
+    command: >
+      sh -c "pip install mcp-streamablehttp-proxy && 
+             ~/.local/bin/mcp-streamablehttp-proxy --host 0.0.0.0 --port 3000 python -m mcp_port_scanner.mcp_server"
     restart: unless-stopped
     networks:
       - scanner-network
 
-  # 命令行模式 - 用于一次性扫描任务
+  # CLI工具容器 - 用于开发调试和独立扫描
   mcp-port-scanner-cli:
     build: .
     container_name: mcp-port-scanner-cli
@@ -40,9 +44,11 @@ services:
       - ./config:/app/config
     environment:
       - PYTHONPATH=/app/src
-    command: tail -f /dev/null  # 保持容器运行
+    command: tail -f /dev/null  # 保持容器运行，用于执行CLI命令
     networks:
       - scanner-network
+    profiles: 
+      - tools  # 可选服务，使用 --profile tools 启动
 
 networks:
   scanner-network:
