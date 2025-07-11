@@ -8,35 +8,36 @@
 
 基于MCP协议的智能分层端口扫描服务，专为AI助手和开发工具设计
 
-[快速开始](#-快速开始) • [功能特性](#-功能特性) • [文档](#-文档) • [演示](#-演示)
-
 </div>
 
-## 🌟 项目亮点
+## 🌟 核心特性
 
-- **🧠 智能扫描**：根据端口数量动态调整扫描深度，平衡效率与覆盖率
-- **🎯 分层递进**：端口扫描 → HTTP检测 → Web深度探测，逐层深入
+### 智能分层扫描
+- **🧠 动态决策**：根据端口数量自动调整扫描深度，平衡效率与覆盖率
+- **🎯 三层架构**：端口扫描 → HTTP检测 → Web深度探测，逐层深入
 - **⚡ 极速性能**：基于RustScan，比传统扫描器快10倍
-- **🔌 多接口支持**：MCP协议、HTTP/SSE、Cursor优化接口
+
+### 多种接口支持
+- **🔌 MCP协议**：原生支持stdio和HTTP/SSE两种传输模式
 - **📊 实时反馈**：SSE推送进度，让扫描过程可视化
+- **🤖 AI集成**：与Cursor等AI工具无缝集成
 
-## 🎯 适用场景
-
+### 适用场景
 - **安全审计**：快速发现网络资产和潜在风险
 - **运维监控**：定期扫描基础设施，确保服务正常
 - **开发测试**：验证端口配置和服务部署
-- **AI集成**：通过MCP协议与Cursor等AI工具无缝集成
+- **AI辅助分析**：通过MCP协议实现智能化安全分析
 
 ## 🚀 快速开始
 
-### 1. 安装
+### 环境准备
 
 ```bash
 # 克隆项目
 git clone https://github.com/yourusername/mcp-port-scanner.git
 cd mcp-port-scanner
 
-# 安装依赖
+# 安装Python依赖
 pip install -r requirements.txt
 pip install mcp
 
@@ -49,7 +50,22 @@ wget https://github.com/RustScan/RustScan/releases/download/2.0.1/rustscan_2.0.1
 sudo dpkg -i rustscan_2.0.1_amd64.deb
 ```
 
-### 2. 快速使用
+### Docker快速启动
+
+```bash
+# 启动stdio模式服务（本地Cursor集成）
+docker-compose up -d mcp-port-scanner
+
+# 启动SSE模式服务（支持远程访问）
+docker-compose up -d mcp-port-scanner-sse
+
+# 查看服务状态
+docker-compose ps
+```
+
+## 🛠️ 使用方式
+
+### 1. 命令行模式
 
 ```bash
 # 扫描单个目标
@@ -62,122 +78,71 @@ python -m mcp_port_scanner scan 192.168.1.1 -p 80,443,8080
 python -m mcp_port_scanner batch 192.168.1.1 192.168.1.2 192.168.1.3
 ```
 
-### 3. MCP集成
+### 2. MCP Server模式
 
-**方式一：Cursor集成（stdio模式）**
-
-编辑 `~/.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "port-scanner": {
-      "command": "/path/to/venv/bin/python3",
-      "args": ["-m", "mcp_port_scanner.mcp_server"],
-      "cwd": "/path/to/mcp-port-scanner"
-    }
-  }
-}
-```
-
-**方式二：SSE模式（支持远程访问）**
-
-```bash
-# 启动SSE服务
-docker-compose up -d mcp-port-scanner-sse
-
-# 服务运行在 http://localhost:3000
-# 支持多会话、远程访问、HTTP防火墙友好
-```
-
-详见 [MCP SSE配置指南](./MCP_SSE_SETUP.md)
-
-## 🖥️ MCP Server模式
-
-本项目提供完整的MCP Server功能，包含5个核心工具，支持与AI助手深度集成。
-
-### 🛠️ MCP工具集
+#### MCP工具集
 
 1. **`scan_target`** - 智能单目标扫描
-   - 用途：深度分析单个IP/域名
    - 参数：ip(必需), ports(可选), scan_layers(可选), config(可选)
 
 2. **`batch_scan`** - 批量扫描  
-   - 用途：同时扫描多个目标
    - 参数：targets(必需), scan_layers(可选), max_concurrent(可选)
 
 3. **`get_scan_status`** - 查询扫描状态
-   - 用途：实时获取扫描进度信息
    - 参数：scan_id(必需)
 
 4. **`list_active_scans`** - 列出活跃扫描
-   - 用途：获取所有正在进行的扫描任务
    - 参数：无
 
 5. **`get_scan_result`** - 获取扫描结果
-   - 用途：获取完整的扫描结果和分析报告
    - 参数：scan_id(必需)
 
-### 🐳 Docker启动方式
+#### 配置 MCP Client
 
-使用Docker Compose启动MCP服务（两种模式可选）：
-
-```bash
-# 启动stdio模式服务（推荐用于本地Cursor集成）
-docker-compose up -d mcp-port-scanner
-
-# 启动SSE模式服务（推荐用于远程访问）
-docker-compose up -d mcp-port-scanner-sse
-
-# 查看服务状态
-docker-compose ps
-```
-
-### ⚙️ MCP Client配置
-
-使用提供的配置文件 `cursor-mcp-config.json` 配置MCP客户端：
-
-**stdio模式配置：**
+**stdio模式（推荐本地使用）：**
 ```json
 {
   "mcpServers": {
     "port-scanner-stdio": {
       "command": "docker",
-      "args": [
-        "exec", "-i", "mcp-port-scanner",
-        "python", "-m", "mcp_port_scanner.mcp_server"
-      ],
-      "cwd": "path\\to\\mcp-port-scanner",
-      "description": "通过stdio协议直接访问Docker容器"
+      "args": ["exec", "-i", "mcp-port-scanner", "python", "-m", "mcp_port_scanner.mcp_server"],
+      "cwd": "path\\to\\mcp-port-scanner"
     }
   }
 }
 ```
 
-**SSE模式配置：**
+**SSE模式（支持远程访问）：**
 ```json
 {
   "mcpServers": {
     "port-scanner-remote": {
-      "url": "http://YOUR_SERVER_IP:3000/mcp",
-      "description": "通过StreamableHTTP协议访问端口扫描服务",
-      "env": {}
+      "url": "http://YOUR_SERVER_IP:3000/mcp"
     }
   }
 }
 ```
 
-### 🤖 系统提示词
+推荐使用 `prompt.md` 作为AI助手的系统提示词，获得专业的网络安全分析能力。
 
-使用 `prompt.md` 中的内容作为AI助手的系统提示词，这样AI助手将获得：
+### 3. Python SDK
 
-- 专业的网络安全分析能力
-- 智能的扫描策略选择
-- 场景驱动的决策逻辑
-- 自动化的工作流程
-- 深度的安全风险评估
+```python
+from mcp_port_scanner import PortScannerSDK
 
-### 📋 测试用例
+# 创建实例
+sdk = PortScannerSDK()
+
+# 扫描目标
+result = sdk.scan("192.168.1.1")
+print(f"发现 {len(result.open_ports)} 个开放端口")
+print(f"发现 {len(result.http_services)} 个Web服务")
+print(f"发现 {len(result.admin_directories)} 个管理界面")
+```
+
+
+
+## 📋 使用示例
 
 **单目标扫描：**
 ```
@@ -197,80 +162,19 @@ docker-compose ps
 紧急扫描 192.168.1.50，怀疑有异常服务
 ```
 
-## 📚 功能特性
+## 🏗️ 架构设计
 
-### 智能扫描模式
+### 分层扫描逻辑
 
 ```python
-# 自动决策扫描深度
+# 智能决策扫描深度
 if 开放端口数 < 3:
     执行全端口深度扫描  # 可能有隐藏服务
 else:
     跳过全端口扫描      # 已获得足够信息
 ```
 
-### 分层扫描架构
-
-1. **端口扫描层**：RustScan快速发现 + Banner获取
-2. **HTTP检测层**：智能识别Web服务，自动尝试HTTP/HTTPS
-3. **Web探测层**：扫描管理界面、API端点、敏感目录
-
-### 分层扫描优势
-
-- **智能决策**：根据端口发现情况自动调整扫描深度
-- **性能优化**：避免不必要的全端口扫描，提升效率
-- **结果丰富**：从端口发现到Web深度探测的完整信息链
-
-## 📖 文档
-
-- 📘 [快速开始指南](./docs/QUICKSTART.md) - 5分钟上手教程
-- 📗 [开发文档](./docs/DEVELOPMENT_GUIDE.md) - 架构设计与扩展开发
-- 📙 [API参考](./docs/API_REFERENCE.md) - 详细的API文档和示例
-- 📕 [架构设计](./docs/ARCHITECTURE.md) - 深入了解设计理念
-- 📓 [MCP SSE配置](./MCP_SSE_SETUP.md) - SSE传输模式配置指南
-- 📔 [Cursor配置](./CURSOR_SETUP.md) - Cursor编辑器集成指南
-
-## 🔧 使用示例
-
-### Python SDK
-
-```python
-from mcp_port_scanner import PortScannerSDK
-
-# 创建实例
-sdk = PortScannerSDK()
-
-# 扫描目标
-result = sdk.scan("192.168.1.1")
-print(f"发现 {len(result.open_ports)} 个开放端口")
-print(f"发现 {len(result.http_services)} 个Web服务")
-print(f"发现 {len(result.admin_directories)} 个管理界面")
-```
-
-### HTTP API
-
-```bash
-# 启动HTTP服务
-python -m mcp_port_scanner server --mode http --port 8080
-
-# 调用API
-curl -X POST http://localhost:8080/scan \
-  -H "Content-Type: application/json" \
-  -d '{"target": "192.168.1.1"}'
-```
-
-### JavaScript集成
-
-```javascript
-// 监听实时进度
-const eventSource = new EventSource('/scan/xxx/stream');
-eventSource.onmessage = (event) => {
-  const progress = JSON.parse(event.data);
-  console.log(`扫描进度: ${progress.percentage}%`);
-};
-```
-
-## 🏗️ 架构设计
+### 系统架构
 
 ```
 ┌─────────────────────────────────────────┐
@@ -295,6 +199,15 @@ eventSource.onmessage = (event) => {
 | 智能扫描（多端口） | 15-30秒 | 跳过全端口扫描 |
 | 完整扫描 | 45-120秒 | 所有扫描层级 |
 | C段扫描 | 5-15分钟 | 254个IP地址 |
+
+## 📖 文档
+
+- 📘 [快速开始指南](./docs/QUICKSTART.md) - 5分钟上手教程
+- 📗 [开发文档](./docs/DEVELOPMENT_GUIDE.md) - 架构设计与扩展开发
+- 📙 [API参考](./docs/API_REFERENCE.md) - 详细的API文档和示例
+- 📕 [架构设计](./docs/ARCHITECTURE.md) - 深入了解设计理念
+- 📓 [MCP SSE配置](./MCP_SSE_SETUP.md) - SSE传输模式配置指南
+- 📔 [Cursor配置](./CURSOR_SETUP.md) - Cursor编辑器集成指南
 
 ## 🛡️ 安全说明
 
