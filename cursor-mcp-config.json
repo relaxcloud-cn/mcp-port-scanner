@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "port-scanner": {
+    "port-scanner-stdio": {
       "command": "docker",
       "args": [
         "exec",
@@ -10,7 +10,13 @@
         "-m",
         "mcp_port_scanner.mcp_server"
       ],
-      "cwd": "path\\to\\mcp-port-scanner"
+      "cwd": "path\\to\\mcp-port-scanner",
+      "description": "通过stdio协议直接访问Docker容器"
+    },
+    "port-scanner-remote": {
+      "url": "http://YOUR_SERVER_IP:3000/mcp",
+      "description": "通过StreamableHTTP协议访问端口扫描服务 - 推荐方式",
+      "env": {}
     }
   }
 } 
