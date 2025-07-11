@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "port-scanner-docker": {
+      "command": "docker",
+      "args": [
+        "compose", 
+        "exec", 
+        "-T",
+        "mcp-port-scanner", 
+        "python", 
+        "-m", 
+        "mcp_port_scanner.mcp_server"
+      ],
+      "cwd": "D:\\ProjectCode\\mcp-port-scanner"
+    },
+    "port-scanner-docker-direct": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-port-scanner",
+        "python",
+        "-m",
+        "mcp_port_scanner.mcp_server"
+      ],
+      "cwd": "D:\\ProjectCode\\mcp-port-scanner"
+    }
+  }
+} 
