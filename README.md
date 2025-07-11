@@ -92,6 +92,111 @@ docker-compose up -d mcp-port-scanner-sse
 
 详见 [MCP SSE配置指南](./MCP_SSE_SETUP.md)
 
+## 🖥️ MCP Server模式
+
+本项目提供完整的MCP Server功能，包含5个核心工具，支持与AI助手深度集成。
+
+### 🛠️ MCP工具集
+
+1. **`scan_target`** - 智能单目标扫描
+   - 用途：深度分析单个IP/域名
+   - 参数：ip(必需), ports(可选), scan_layers(可选), config(可选)
+
+2. **`batch_scan`** - 批量扫描  
+   - 用途：同时扫描多个目标
+   - 参数：targets(必需), scan_layers(可选), max_concurrent(可选)
+
+3. **`get_scan_status`** - 查询扫描状态
+   - 用途：实时获取扫描进度信息
+   - 参数：scan_id(必需)
+
+4. **`list_active_scans`** - 列出活跃扫描
+   - 用途：获取所有正在进行的扫描任务
+   - 参数：无
+
+5. **`get_scan_result`** - 获取扫描结果
+   - 用途：获取完整的扫描结果和分析报告
+   - 参数：scan_id(必需)
+
+### 🐳 Docker启动方式
+
+使用Docker Compose启动MCP服务（两种模式可选）：
+
+```bash
+# 启动stdio模式服务（推荐用于本地Cursor集成）
+docker-compose up -d mcp-port-scanner
+
+# 启动SSE模式服务（推荐用于远程访问）
+docker-compose up -d mcp-port-scanner-sse
+
+# 查看服务状态
+docker-compose ps
+```
+
+### ⚙️ MCP Client配置
+
+使用提供的配置文件 `cursor-mcp-config.json` 配置MCP客户端：
+
+**stdio模式配置：**
+```json
+{
+  "mcpServers": {
+    "port-scanner-stdio": {
+      "command": "docker",
+      "args": [
+        "exec", "-i", "mcp-port-scanner",
+        "python", "-m", "mcp_port_scanner.mcp_server"
+      ],
+      "cwd": "path\\to\\mcp-port-scanner",
+      "description": "通过stdio协议直接访问Docker容器"
+    }
+  }
+}
+```
+
+**SSE模式配置：**
+```json
+{
+  "mcpServers": {
+    "port-scanner-remote": {
+      "url": "http://YOUR_SERVER_IP:3000/mcp",
+      "description": "通过StreamableHTTP协议访问端口扫描服务",
+      "env": {}
+    }
+  }
+}
+```
+
+### 🤖 系统提示词
+
+使用 `prompt.md` 中的内容作为AI助手的系统提示词，这样AI助手将获得：
+
+- 专业的网络安全分析能力
+- 智能的扫描策略选择
+- 场景驱动的决策逻辑
+- 自动化的工作流程
+- 深度的安全风险评估
+
+### 📋 测试用例
+
+**单目标扫描：**
+```
+请扫描 8.8.8.8，进行全面的安全分析
+```
+
+**批量扫描：**
+```
+批量扫描以下目标：
+- 192.168.1.1
+- 192.168.1.100
+- www.example.com
+```
+
+**应急响应：**
+```
+紧急扫描 192.168.1.50，怀疑有异常服务
+```
+
 ## 📚 功能特性
 
 ### 智能扫描模式
@@ -110,14 +215,11 @@ else:
 2. **HTTP检测层**：智能识别Web服务，自动尝试HTTP/HTTPS
 3. **Web探测层**：扫描管理界面、API端点、敏感目录
 
-### MCP工具集
+### 分层扫描优势
 
-- `scan_target` - 智能扫描单个IP
-- `batch_scan` - 批量扫描多个目标
-- `quick_scan` - 快速端口扫描
-- `scan_network` - C段网络扫描
-- `get_scan_status` - 查询扫描进度
-- `get_scan_result` - 获取详细结果
+- **智能决策**：根据端口发现情况自动调整扫描深度
+- **性能优化**：避免不必要的全端口扫描，提升效率
+- **结果丰富**：从端口发现到Web深度探测的完整信息链
 
 ## 📖 文档
 
