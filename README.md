@@ -34,7 +34,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/mcp-port-scanner.git
+git clone https://github.com/relaxcloud-cn/port-scanner.git
 cd mcp-port-scanner
 
 # 安装Python依赖
@@ -100,13 +100,30 @@ python -m mcp_port_scanner batch 192.168.1.1 192.168.1.2 192.168.1.3
 #### 配置 MCP Client
 
 **stdio模式（推荐本地使用）：**
+
+**Docker环境：**
 ```json
 {
   "mcpServers": {
     "port-scanner-stdio": {
       "command": "docker",
-      "args": ["exec", "-i", "mcp-port-scanner", "python", "-m", "mcp_port_scanner.mcp_server"],
-      "cwd": "path\\to\\mcp-port-scanner"
+      "args": ["exec", "-i", "mcp-port-scanner", "python", "-m", "mcp_port_scanner.mcp_server"]
+    }
+  }
+}
+```
+
+**本地Python环境：**
+```json
+{
+  "mcpServers": {
+    "port-scanner-local": {
+      "command": "python",
+      "args": ["-m", "mcp_port_scanner.mcp_server"],
+      "cwd": "/path/to/mcp-port-scanner",
+      "env": {
+        "PYTHONPATH": "src"
+      }
     }
   }
 }
@@ -152,17 +169,33 @@ print(f"发现 {len(result.admin_directories)} 个管理界面")
 **批量扫描：**
 ```
 批量扫描以下目标：
-- 192.168.1.1
-- 192.168.1.100
-- www.example.com
+- 8.8.8.8
+- www.producthunt.com
+- 192.168.2.229
 ```
 
 **应急响应：**
 ```
-紧急扫描 192.168.1.50，怀疑有异常服务
+紧急扫描 192.168.2.229，怀疑有异常服务
 ```
 
-## 🏗️ 架构设计
+### Cursor + Docker 集成示例
+
+以下是使用 Cursor 作为 MCP 客户端，与通过 Docker 运行的扫描器服务进行交互的实际工作流程。
+
+**1. 快速扫描常用端口**
+
+![快速扫描](img/20250715-165445.jpg)
+
+**2. 发现开放端口后的智能分析**
+
+![智能分析](img/20250715-165450.jpg)
+
+**3. 深入探测Web服务和管理后台**
+
+![深度探测](img/20250715-165455.jpg)
+
+## ��️ 架构设计
 
 ### 分层扫描逻辑
 
