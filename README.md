@@ -30,30 +30,88 @@
 
 ## 🏗️ 架构设计
 
-### 分层扫描逻辑
-
-```python
-# 智能决策扫描深度
-if 开放端口数 < 3:
-    执行全端口深度扫描  # 可能有隐藏服务
-else:
-    跳过全端口扫描      # 已获得足够信息
-```
-
 ### 系统架构
 
+```mermaid
+graph TB
+    subgraph "接口层 (Interfaces)"
+        CLI["🖥️ CLI<br/>命令行接口"]
+        MCP["🔌 MCP<br/>协议接口"]
+        HTTP["🌐 HTTP<br/>Web接口"]
+        SSE["📡 Cursor SSE<br/>实时推送"]
+    end
+    
+    subgraph "适配器层 (Adapters)"
+        CLI_ADAPTER["CLI适配器"]
+        MCP_LOCAL["MCP本地适配器"]
+        MCP_REMOTE["MCP远程适配器"]
+        SSE_ADAPTER["SSE适配器"]
+    end
+    
+    subgraph "服务层 (Service Layer)"
+        SCANNER["🔍 Scanner<br/>端口扫描器"]
+        DETECTOR["🔎 Detector<br/>HTTP检测器"]
+        PROBER["🕵️ Prober<br/>Web探测器"]
+        MODELS["📊 Models<br/>数据模型"]
+    end
+    
+    CLI --> CLI_ADAPTER
+    MCP --> MCP_LOCAL
+    MCP --> MCP_REMOTE
+    HTTP --> MCP_REMOTE
+    SSE --> SSE_ADAPTER
+    
+    CLI_ADAPTER --> SCANNER
+    MCP_LOCAL --> SCANNER
+    MCP_REMOTE --> SCANNER
+    SSE_ADAPTER --> SCANNER
+    
+    SCANNER --> DETECTOR
+    DETECTOR --> PROBER
+    
+    SCANNER -.-> MODELS
+    DETECTOR -.-> MODELS
+    PROBER -.-> MODELS
+    
+    style CLI fill:#e1f5fe
+    style MCP fill:#f3e5f5
+    style HTTP fill:#e8f5e8
+    style SSE fill:#fff3e0
+    
+    style SCANNER fill:#ffebee
+    style DETECTOR fill:#f1f8e9
+    style PROBER fill:#e3f2fd
+    style MODELS fill:#fafafa
 ```
-┌─────────────────────────────────────────┐
-│          接口层 (Interfaces)             │
-├────────┬────────┬────────┬──────────────┤
-│  CLI   │  MCP   │  HTTP  │  Cursor SSE  │
-├────────┴────────┴────────┴──────────────┤
-│         适配器层 (Adapters)              │
-├──────────────────────────────────────────┤
-│         服务层 (Service Layer)           │
-├────────┬────────┬────────┬──────────────┤
-│Scanner │Detector│ Prober │    Models    │
-└────────┴────────┴────────┴──────────────┘
+
+### 分层扫描逻辑
+
+```mermaid
+flowchart TD
+    START([开始扫描]) --> COMMON[🔍 常用端口扫描<br/>Top 1000 ports]
+    COMMON --> CHECK{开放端口数量?}
+    
+    CHECK -->|< 3个端口| FULL[🔍 全端口深度扫描<br/>1-65535 ports<br/>可能有隐藏服务]
+    CHECK -->|≥ 3个端口| SKIP[⏭️ 跳过全端口扫描<br/>已获得足够信息]
+    
+    FULL --> HTTP[🔎 HTTP服务检测<br/>识别Web服务]
+    SKIP --> HTTP
+    
+    HTTP --> WEB{发现Web服务?}
+    WEB -->|是| PROBE[🕵️ Web深度探测<br/>• 目录扫描<br/>• 管理后台发现<br/>• 技术栈识别]
+    WEB -->|否| RESULT
+    
+    PROBE --> RESULT[📊 输出扫描结果]
+    
+    style START fill:#e3f2fd
+    style COMMON fill:#f3e5f5
+    style CHECK fill:#fff3e0
+    style FULL fill:#ffebee
+    style SKIP fill:#e8f5e8
+    style HTTP fill:#f1f8e9
+    style WEB fill:#fff3e0
+    style PROBE fill:#e1f5fe
+    style RESULT fill:#fafafa
 ```
 
 ## 🚀 快速开始
