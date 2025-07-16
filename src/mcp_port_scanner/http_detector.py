@@ -6,7 +6,7 @@ import asyncio
 import re
 from typing import List, Dict, Any, Optional, Tuple
 import httpx
-from loguru import logger
+from .logger_config import logger
 from urllib.parse import urlparse, urljoin
 import time
 
@@ -19,17 +19,7 @@ class HTTPDetector:
     def __init__(self, config: Optional[ScanConfig] = None):
         self.config = config or ScanConfig()
         self.detection_rules = self._load_detection_rules()
-        self._setup_logging()
-    
-    def _setup_logging(self) -> None:
-        """设置日志"""
-        if self.config.enable_logging:
-            logger.add(
-                "logs/http_detector_{time}.log",
-                level=self.config.log_level,
-                rotation="1 day",
-                retention="7 days"
-            )
+        logger.debug("HTTPDetector 初始化完成，加载了 {} 条检测规则", len(self.detection_rules))
     
     def _load_detection_rules(self) -> List[HTTPDetectionRule]:
         """

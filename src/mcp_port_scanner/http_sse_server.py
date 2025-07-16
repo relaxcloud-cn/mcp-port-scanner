@@ -17,7 +17,7 @@ from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
-from loguru import logger
+from .logger_config import logger
 
 # 导入现有服务层（不修改现有架构）
 from .service import ScanService
@@ -420,14 +420,6 @@ def start_server(host: str = "127.0.0.1", port: int = 8080,
                 workers: int = 1, log_level: str = "info"):
     """启动HTTP/SSE服务器"""
     logger.info(f"🌐 启动HTTP/SSE桥接服务器: http://{host}:{port}")
-    
-    # 配置日志
-    logger.add(
-        "logs/http_sse_server_{time}.log",
-        level=log_level.upper(),
-        rotation="1 day",
-        retention="7 days"
-    )
     
     # 启动服务器
     uvicorn.run(

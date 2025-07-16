@@ -13,7 +13,7 @@ from datetime import datetime
 from mcp.server import Server
 from mcp.types import Tool, TextContent
 from mcp.server.stdio import stdio_server
-from loguru import logger
+from .logger_config import logger
 
 from .models import (
     ScanTarget, ScanConfig, ScanRequest, ScanResponse, 
@@ -32,19 +32,15 @@ scanner = PortScanner()
 http_detector = HTTPDetector()
 web_prober = WebProber()
 
-# 设置日志 - 检查是否在docker run模式下
-if os.path.exists("/app/logs"):
-    # docker compose模式，可以写入文件
-    logger.add(
-        "logs/mcp_server_{time}.log",
-        level="INFO",
-        rotation="1 day",
-        retention="7 days"
-    )
-else:
-    # docker run模式，只输出到stderr
+# 设置日志 - 检查是否在MCP stdio模式下
+mcp_mode = os.getenv("MCP_MODE", "stdio").lower()
+if mcp_mode == "stdio":
+    # MCP stdio模式，禁用日志输出避免干扰协议
     logger.remove()
-    logger.add(lambda msg: None, level="INFO")  # 禁用日志输出，避免干扰MCP协议
+    logger.add(lambda msg: None, level="INFO")
+else:
+    # 其他模式（如SSE），使用标准日志配置
+    logger.debug("MCP服务器初始化，模式: {}", mcp_mode)
 
 @server.list_tools()
 async def list_tools() -> List[Tool]:

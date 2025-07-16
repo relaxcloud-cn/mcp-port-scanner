@@ -11,6 +11,7 @@ from mcp.server.stdio import stdio_server
 
 from ..adapters.mcp_local_adapter import MCPLocalAdapter
 from ..service import ScanService
+from ..logger_config import logger
 
 
 class MCPLocalServer:
@@ -20,6 +21,7 @@ class MCPLocalServer:
         self.server = Server("port-scanner")
         self.service = ScanService()
         self.adapter = MCPLocalAdapter(self.service)
+        logger.info("MCPLocalServer: 初始化完成，服务名称: port-scanner")
         self._setup_tools()
     
     def _setup_tools(self) -> None:

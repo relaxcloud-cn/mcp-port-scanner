@@ -14,6 +14,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from . import BaseAdapter
 from ..service import ScanService, ScanProgress
 from ..models import ScanResult, ScanConfig, ScanTarget
+from ..logger_config import logger
 
 
 class CLIAdapter(BaseAdapter):
@@ -22,6 +23,7 @@ class CLIAdapter(BaseAdapter):
     def __init__(self, service: Optional[ScanService] = None):
         self.service = service or ScanService()
         self.console = Console()
+        logger.debug("CLIAdapter: 初始化完成")
     
     async def handle_request(self, request_data: Dict[str, Any]) -> ScanResult:
         """
@@ -43,6 +45,8 @@ class CLIAdapter(BaseAdapter):
         layers = request_data.get("layers", ["port_scan", "http_detection", "web_probe"])
         config_data = request_data.get("config", {})
         show_progress = request_data.get("show_progress", True)
+        
+        logger.info(f"CLIAdapter: 处理扫描请求 - IP={ip}, ports={ports}, layers={layers}")
         
         # 更新配置
         if config_data:

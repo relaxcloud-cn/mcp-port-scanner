@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 
 from ..service import ScanService, CallbackType, ScanProgress
 from ..models import ScanTarget, ScanConfig, ScanResult
+from ..logger_config import logger
 
 
 class PortScannerSDK:
@@ -26,6 +27,9 @@ class PortScannerSDK:
         """
         self.service = ScanService(config)
         self._callbacks: Dict[str, Dict[CallbackType, List[Callable]]] = {}
+        logger.info("PortScannerSDK: 初始化完成")
+        if config:
+            logger.debug(f"SDK配置: smart_scan={config.smart_scan_enabled}, threshold={config.smart_scan_threshold}")
     
     # ==================== 基础扫描接口 ====================
     
@@ -45,6 +49,7 @@ class PortScannerSDK:
             >>> result = sdk.scan("192.168.1.1")
             >>> print(f"发现 {len(result.open_ports)} 个开放端口")
         """
+        logger.info(f"SDK: 执行同步扫描 - IP={ip}, ports={ports}")
         return self.service.scan_sync(ip, ports)
     
     def scan_ports_only(self, ip: str, ports: Optional[List[int]] = None) -> ScanResult:

@@ -10,7 +10,7 @@ from datetime import datetime
 from dataclasses import dataclass
 from enum import Enum
 import json
-from loguru import logger
+from .logger_config import logger
 import time
 
 from .models import (
@@ -62,7 +62,8 @@ class ScanService:
         # 结果缓存
         self.result_cache: Dict[str, ScanResult] = {}
         
-        logger.info("ScanService initialized")
+        logger.info("ScanService initialized with config: smart_scan={}, threshold={}", 
+                   self.config.smart_scan_enabled, self.config.smart_scan_threshold)
     
     # ==================== 同步调用模式 ====================
     
@@ -142,7 +143,7 @@ class ScanService:
         # 创建扫描目标
         target = ScanTarget(ip=ip, ports=ports)
         
-        logger.info(f"开始扫描目标: {ip}")
+        logger.info(f"开始扫描目标: {ip}, 指定端口: {ports}, 扫描层级: {layers}")
         start_time = time.time()
         
         # 生成扫描ID

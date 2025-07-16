@@ -5,7 +5,7 @@
 import asyncio
 from typing import List, Dict, Any, Optional, Set
 import httpx
-from loguru import logger
+from .logger_config import logger
 from urllib.parse import urljoin, urlparse
 import time
 import re
@@ -19,17 +19,7 @@ class WebProber:
     def __init__(self, config: Optional[ScanConfig] = None):
         self.config = config or ScanConfig()
         self.admin_rules = self._load_admin_directory_rules()
-        self._setup_logging()
-    
-    def _setup_logging(self) -> None:
-        """设置日志"""
-        if self.config.enable_logging:
-            logger.add(
-                "logs/web_prober_{time}.log",
-                level=self.config.log_level,
-                rotation="1 day",
-                retention="7 days"
-            )
+        logger.debug("WebProber 初始化完成，加载了 {} 条管理目录规则", len(self.admin_rules))
     
     def _load_admin_directory_rules(self) -> List[AdminDirectoryRule]:
         """

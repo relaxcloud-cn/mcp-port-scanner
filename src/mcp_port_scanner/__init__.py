@@ -12,6 +12,9 @@ __version__ = "0.1.0"
 __author__ = "Sky"
 __email__ = "sky@example.com"
 
+# 导入并初始化日志配置
+from .logger_config import logger, configure_logger, init_logger
+
 # 核心业务层
 from .scanner import PortScanner
 from .http_detector import HTTPDetector
