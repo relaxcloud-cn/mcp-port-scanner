@@ -193,7 +193,8 @@ python -m mcp_port_scanner batch 192.168.1.1 192.168.1.2 192.168.1.3
   "mcpServers": {
     "port-scanner-stdio": {
       "command": "docker",
-      "args": ["exec", "-i", "mcp-port-scanner", "python", "-m", "mcp_port_scanner.mcp_server"]
+      "args": ["exec", "-i", "mcp-port-scanner", "python", "-m", "mcp_port_scanner.interfaces.mcp_local_server"],
+      "description": "新版本MCP服务器 - 7个工具，智能扫描策略"
     }
   }
 }
@@ -205,11 +206,12 @@ python -m mcp_port_scanner batch 192.168.1.1 192.168.1.2 192.168.1.3
   "mcpServers": {
     "port-scanner-local": {
       "command": "python",
-      "args": ["-m", "mcp_port_scanner.mcp_server"],
+      "args": ["-m", "mcp_port_scanner.interfaces.mcp_local_server"],
       "cwd": "/path/to/mcp-port-scanner",
       "env": {
         "PYTHONPATH": "src"
-      }
+      },
+      "description": "本地新版本MCP服务器"
     }
   }
 }

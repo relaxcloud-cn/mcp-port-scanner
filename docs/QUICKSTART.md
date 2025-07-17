@@ -66,7 +66,7 @@ python -m mcp_port_scanner server --mode cursor --port 8080
   "mcpServers": {
     "port-scanner": {
       "command": "/path/to/venv/bin/python3",
-      "args": ["-m", "mcp_port_scanner.mcp_server"],
+      "args": ["-m", "mcp_port_scanner.interfaces.mcp_local_server"],
       "cwd": "/path/to/mcp-port-scanner",
       "env": {
         "PYTHONPATH": "src"

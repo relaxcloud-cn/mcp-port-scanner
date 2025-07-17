@@ -101,7 +101,11 @@ def init_logger():
     """初始化日志系统，从环境变量读取配置"""
     log_level = os.getenv("LOG_LEVEL", "INFO").upper()
     log_detailed = os.getenv("LOG_DETAILED", "true").lower() == "true"
-    log_file = os.getenv("LOG_FILE", None)
+    log_file = os.getenv("LOG_FILE", "logs/mcp_port_scanner.log")
+
+    print(f"log_file: {log_file}")
+    print(f"log_level: {log_level}")
+    print(f"log_detailed: {log_detailed}")
     
     configure_logger(level=log_level, detailed=log_detailed, log_file=log_file)
 

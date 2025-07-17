@@ -4,11 +4,9 @@
       "command": "python",
       "args": [
         "-m", 
-        "mcp_port_scanner.cli",
+        "mcp_port_scanner.interfaces.cli_interface",
         "server",
-        "--mode", "cursor",
-        "--host", "127.0.0.1",
-        "--port", "8080"
+        "--mode", "mcp"
       ],
       "cwd": "/Users/sky/Prism/mcp-port-scanner",
       "env": {
@@ -19,7 +17,7 @@
       "command": "python",
       "args": [
         "-m", 
-        "mcp_port_scanner.cli",
+        "mcp_port_scanner.interfaces.mcp_local_server",
         "server",
         "--mode", "http",
         "--host", "127.0.0.1",
@@ -34,7 +32,7 @@
       "command": "python",
       "args": [
         "-m", 
-        "mcp_port_scanner.mcp_server"
+        "mcp_port_scanner.interfaces.mcp_local_server"
       ],
       "cwd": "/Users/sky/Prism/mcp-port-scanner",
       "env": {

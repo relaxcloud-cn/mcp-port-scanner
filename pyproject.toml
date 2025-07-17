@@ -51,7 +51,7 @@ dev = [
 ]
 
 [project.scripts]
-mcp-port-scanner = "mcp_port_scanner.cli:main"
+mcp-port-scanner = "mcp_port_scanner.interfaces.cli_interface:main"
 
 [project.urls]
 Homepage = "https://github.com/relaxcloud-cn/mcp-port-scanner"

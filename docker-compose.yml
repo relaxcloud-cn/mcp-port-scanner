@@ -27,10 +27,12 @@ services:
       - PYTHONPATH=/app/src
       - MCP_BIND_HOST=0.0.0.0
       - MCP_PORT=3000
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=DEBUG
+      - LOG_FILE=logs/mcp_port_scanner1.log
+      - LOG_DETAILED=true
     command: >
       sh -c "pip install mcp-streamablehttp-proxy && 
-             ~/.local/bin/mcp-streamablehttp-proxy --host 0.0.0.0 --port 3000 python -m mcp_port_scanner.mcp_server"
+             ~/.local/bin/mcp-streamablehttp-proxy --host 0.0.0.0 --port 3000 python -m mcp_port_scanner.interfaces.mcp_local_server"
     restart: unless-stopped
     networks:
       - scanner-network
