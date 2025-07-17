@@ -171,7 +171,7 @@ class ScanConfig(BaseModel):
     """扫描配置模型"""
     # 智能扫描模式配置
     smart_scan_enabled: bool = Field(default=True, description="是否启用智能扫描模式")
-    smart_scan_threshold: int = Field(default=3, description="智能扫描端口阈值，小于此值执行全端口扫描")
+    smart_scan_threshold: int = Field(default=10, description="智能扫描端口阈值，小于此值执行全端口扫描")
     
     # 预设端口配置
     preset_ports: List[int] = Field(
@@ -219,10 +219,10 @@ class ScanConfig(BaseModel):
         description="常规Web服务端口列表，用于HTTP服务检测"
     )
     
-    # RustScan配置 - 极速优化
-    rustscan_timeout: int = Field(default=30000, description="RustScan超时时间(ms) - 极速模式")
+    # RustScan配置 - 优化性能
+    rustscan_timeout: int = Field(default=10000, description="RustScan超时时间(ms) - 平衡速度与准确性")
     rustscan_batch_size: int = Field(default=65535, description="RustScan批处理大小 - 最大并发")
-    rustscan_ports: str = Field(default="1-65535", description="RustScan扫描端口范围")
+    rustscan_ports: str = Field(default="1-1000", description="RustScan默认扫描端口范围")
     rustscan_tries: int = Field(default=1, description="RustScan重试次数")
     rustscan_ulimit: int = Field(default=8192, description="自动提升文件描述符限制")
     

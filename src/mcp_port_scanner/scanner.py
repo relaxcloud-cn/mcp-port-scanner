@@ -39,7 +39,7 @@ class PortScanner:
             if progress_callback:
                 await progress_callback("端口发现", "正在扫描端口...")
             
-            open_ports = await self._rustscan_ports(target, progress_callback)
+            open_ports = await self._rustscan_ports(target)
             
             if not open_ports:
                 logger.info(f"未发现开放端口: {target.ip}")
@@ -58,64 +58,49 @@ class PortScanner:
             logger.error(f"端口扫描失败: {target.ip} - {e}")
             return []
     
-    async def _rustscan_ports(self, target: ScanTarget, progress_callback: Optional[callable] = None) -> List[int]:
+    async def _rustscan_ports(self, target: ScanTarget) -> List[int]:
         """
         使用RustScan进行端口扫描
-        
-        Args:
-            target: 扫描目标
-            
-        Returns:
-            List[int]: 开放端口列表
         """
         try:
-            # 构建RustScan命令 - 极速优化
-            cmd = [
-                "rustscan",
-                "-a", target.ip,
-                "-t", str(self.config.rustscan_timeout),
-                "-b", str(self.config.rustscan_batch_size),
-                "--tries", str(self.config.rustscan_tries),
-                "--ulimit", str(self.config.rustscan_ulimit),
-                "--scan-order", "serial",  # 串行扫描更快
-                "-g",  # greppable输出，只显示端口信息
+            # 如果指定了端口范围，直接扫描
+            if target.ports:
+                return await self._execute_rustscan_batch(target, target.ports)
+            
+            # 全端口扫描：分批处理避免参数过长
+            logger.info(f"🔍 开始分批全端口扫描: {target.ip}")
+            all_open_ports = []
+            
+            # 定义扫描批次 - 分成更小的范围
+            port_ranges = [
+                "1-1000",      # 常用端口
+                "1001-5000",   # 扩展端口1
+                "5001-10000",  # 扩展端口2
+                "10001-20000", # 扩展端口3
+                "20001-30000", # 扩展端口4
+                "30001-40000", # 扩展端口5
+                "40001-50000", # 扩展端口6
+                "50001-60000", # 扩展端口7
+                "60001-65535"  # 高位端口
             ]
             
-            # 如果指定了端口范围
-            if target.ports:
-                ports_str = ",".join(map(str, target.ports))
-                cmd.extend(["-p", ports_str])
-            else:
-                # 使用端口范围而不是字符串
-                cmd.extend(["-r", self.config.rustscan_ports])
+            for i, port_range in enumerate(port_ranges, 1):
+                logger.info(f"📡 扫描端口范围 {i}/{len(port_ranges)}: {port_range}")
+                
+                try:
+                    batch_ports = await self._execute_rustscan_range(target, port_range)
+                    all_open_ports.extend(batch_ports)
+                    
+                    # 如果这批找到了端口，记录一下
+                    if batch_ports:
+                        logger.info(f"✅ 范围 {port_range} 发现 {len(batch_ports)} 个开放端口: {batch_ports}")
+                        
+                except Exception as e:
+                    logger.warning(f"⚠️ 范围 {port_range} 扫描失败: {e}")
+                    continue
             
-            logger.info(f"💨 RustScan极速配置: timeout={self.config.rustscan_timeout}ms, batch={self.config.rustscan_batch_size}")
-            
-            # 安全的命令调试输出 - 避免输出超长端口列表
-            if target.ports and len(target.ports) > 100:
-                # 对于超过100个端口的扫描，只显示端口数量
-                debug_cmd = [arg for arg in cmd if not (arg.startswith('1,2,3,4,') or ',' in arg)]
-                debug_cmd_str = ' '.join(debug_cmd)
-                logger.debug(f"执行RustScan命令 (包含{len(target.ports)}个端口): {debug_cmd_str} -p [端口列表...]")
-            else:
-                # 端口数量较少时显示完整命令
-                logger.debug(f"执行RustScan命令: {' '.join(cmd)}")
-            
-            # 执行命令
-            process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            
-            stdout, stderr = await process.communicate()
-            
-            if process.returncode != 0:
-                logger.error(f"RustScan执行失败: {stderr.decode()}")
-                return []
-            
-            # 解析greppable输出
-            return self._parse_rustscan_greppable_output(stdout.decode())
+            logger.info(f"🎯 全端口扫描完成，总共发现 {len(all_open_ports)} 个开放端口")
+            return sorted(list(set(all_open_ports)))  # 去重并排序
                 
         except FileNotFoundError:
             logger.warning("RustScan未找到，回退到Python socket扫描")
@@ -123,6 +108,111 @@ class PortScanner:
         except Exception as e:
             logger.error(f"RustScan扫描失败: {e}")
             return await self._socket_scan_ports(target)
+
+    async def _execute_rustscan_range(self, target: ScanTarget, port_range: str) -> List[int]:
+        """
+        执行单个端口范围的RustScan扫描
+        """
+        cmd = [
+            "rustscan",
+            "-a", target.ip,
+            "-t", str(self.config.rustscan_timeout),
+            "-b", str(self.config.rustscan_batch_size),
+            "--tries", str(self.config.rustscan_tries),
+            "--ulimit", str(self.config.rustscan_ulimit),
+            "--scan-order", "serial",
+            "-g",  # greppable输出
+            "-r", port_range  # 端口范围
+        ]
+        
+        # 执行命令
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        
+        stdout, stderr = await process.communicate()
+        
+        if process.returncode != 0:
+            error_msg = stderr.decode().strip()
+            if "Permission denied" in error_msg or "ulimit" in error_msg:
+                logger.warning(f"RustScan权限或ulimit问题，范围 {port_range}: {error_msg}")
+            else:
+                logger.warning(f"RustScan范围 {port_range} 执行失败: {error_msg}")
+            return []
+        
+        # 解析结果
+        return self._parse_rustscan_greppable_output(stdout.decode())
+
+    async def _execute_rustscan_batch(self, target: ScanTarget, ports: List[int]) -> List[int]:
+        """
+        执行指定端口列表的RustScan扫描
+        """
+        # 如果端口数量太多，也需要分批
+        if len(ports) > 1000:
+            logger.info(f"📋 端口数量 {len(ports)} 较多，分批扫描")
+            all_results = []
+            batch_size = 1000
+            
+            for i in range(0, len(ports), batch_size):
+                batch_ports = ports[i:i + batch_size]
+                logger.info(f"📡 扫描端口批次 {i//batch_size + 1}: {len(batch_ports)} 个端口")
+                
+                try:
+                    batch_results = await self._execute_rustscan_port_list(target, batch_ports)
+                    all_results.extend(batch_results)
+                except Exception as e:
+                    logger.warning(f"⚠️ 端口批次扫描失败: {e}")
+                    continue
+            
+            return sorted(list(set(all_results)))
+        else:
+            return await self._execute_rustscan_port_list(target, ports)
+
+    async def _execute_rustscan_port_list(self, target: ScanTarget, ports: List[int]) -> List[int]:
+        """
+        执行具体端口列表的RustScan扫描
+        """
+        cmd = [
+            "rustscan",
+            "-a", target.ip,
+            "-t", str(self.config.rustscan_timeout),
+            "-b", str(self.config.rustscan_batch_size),
+            "--tries", str(self.config.rustscan_tries),
+            "--ulimit", str(self.config.rustscan_ulimit),
+            "--scan-order", "serial",
+            "-g",  # greppable输出
+        ]
+        
+        # 添加端口列表
+        ports_str = ",".join(map(str, ports))
+        cmd.extend(["-p", ports_str])
+        
+        logger.info(f"💨 RustScan极速配置: timeout={self.config.rustscan_timeout}ms, batch={self.config.rustscan_batch_size}")
+        
+        # 安全的命令调试输出
+        if len(ports) > 100:
+            logger.debug(f"执行RustScan命令 (包含{len(ports)}个端口): rustscan -a {target.ip} ... -p [端口列表...]")
+        else:
+            logger.debug(f"执行RustScan命令: {' '.join(cmd)}")
+        
+        # 执行命令
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        
+        stdout, stderr = await process.communicate()
+        
+        if process.returncode != 0:
+            error_msg = stderr.decode().strip()
+            logger.error(f"RustScan执行失败: {error_msg}")
+            return []
+        
+        # 解析greppable输出
+        return self._parse_rustscan_greppable_output(stdout.decode())
     
     def _parse_rustscan_greppable_output(self, output: str) -> List[int]:
         """
