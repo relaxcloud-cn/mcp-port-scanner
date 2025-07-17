@@ -17,6 +17,7 @@ import time
 
 from .models import ScanTarget, ScanConfig, ScanResult
 from .service import ScanService
+from .logger_config import logger
 
 console = Console()
 
@@ -26,6 +27,7 @@ class PortScannerCLI:
     
     def __init__(self):
         self.service = ScanService()
+        logger.debug("PortScannerCLI 初始化完成")
     
     def display_scan_header(self, ip: str, config: ScanConfig) -> None:
         """显示扫描启动信息"""
@@ -134,6 +136,8 @@ class PortScannerCLI:
                                 config: Optional[ScanConfig] = None,
                                 show_smart_info: bool = True) -> dict:
         """扫描单个目标"""
+        logger.info(f"CLI: 开始扫描目标 {ip}, 端口: {ports}, 层级: {scan_layers}")
+        
         if scan_layers is None:
             scan_layers = ["port_scan", "http_detection", "web_probe"]
         
@@ -142,6 +146,7 @@ class PortScannerCLI:
         
         # 更新配置
         self.service.config = config
+        logger.debug(f"CLI: 使用配置 - 智能扫描: {config.smart_scan_enabled}, 阈值: {config.smart_scan_threshold}")
         
         # 显示扫描启动信息
         if show_smart_info:
@@ -155,12 +160,16 @@ class PortScannerCLI:
         async def progress_callback(stage: str, message: str):
             nonlocal current_stage, stage_start_time
             
+            logger.debug(f"CLI进度回调: stage={stage}, message={message}")
+            
             # 检查是否是阶段完成通知
             if message.startswith("STAGE_COMPLETE:"):
                 if current_stage is not None:
                     # 解析扫描结果
                     result_str = message[len("STAGE_COMPLETE:"):]
                     stage_duration = time.time() - stage_start_time
+                    
+                    logger.info(f"CLI: 阶段完成 - {current_stage}, 耗时: {stage_duration:.2f}秒")
                     
                     # 从字符串中提取结果（这里简化处理，实际可以传递对象）
                     console.print("\n")  # 换行清除进度显示
@@ -172,6 +181,7 @@ class PortScannerCLI:
                 # 开始新阶段
                 current_stage = stage
                 stage_start_time = time.time()
+                logger.info(f"CLI: 进入新阶段 - {stage}")
                 console.print(f"\n🔄 [bold yellow]{stage}[/bold yellow] 开始...")
             
             # 显示详细进度
@@ -211,6 +221,7 @@ class PortScannerCLI:
             return result
             
         except Exception as e:
+            logger.error(f"CLI: 扫描失败 - {ip}", exc_info=True)
             console.print(f"\n[red]扫描失败: {e}[/red]")
             if config.log_level == "DEBUG":
                 import traceback
@@ -446,13 +457,16 @@ def cli():
 def scan(ip, ports, layers, timeout, banner_timeout, http_timeout, 
          no_admin_scan, admin_threads, output, verbose):
     """扫描单个IP地址"""
+    logger.info(f"CLI命令: scan {ip}, ports={ports}, layers={layers}")
     
     # 解析参数
     port_list = None
     if ports:
         try:
             port_list = [int(p.strip()) for p in ports.split(',')]
+            logger.debug(f"解析端口列表: {port_list}")
         except ValueError:
+            logger.error(f"端口格式错误: {ports}")
             console.print("[red]端口格式错误，请使用逗号分隔的数字[/red]")
             sys.exit(1)
     
@@ -499,6 +513,7 @@ def scan(ip, ports, layers, timeout, banner_timeout, http_timeout,
 @click.option('--verbose', '-v', is_flag=True, help='详细输出')
 def batch(targets_file, layers, max_concurrent, output_dir, verbose):
     """批量扫描（从文件读取目标列表）"""
+    logger.info(f"CLI命令: batch {targets_file}, max_concurrent={max_concurrent}")
     
     try:
         # 读取目标文件
@@ -506,9 +521,11 @@ def batch(targets_file, layers, max_concurrent, output_dir, verbose):
             targets = [line.strip() for line in f if line.strip() and not line.startswith('#')]
         
         if not targets:
+            logger.error(f"目标文件为空: {targets_file}")
             console.print("[red]目标文件为空[/red]")
             sys.exit(1)
         
+        logger.info(f"从 {targets_file} 读取到 {len(targets)} 个目标")
         console.print(f"[green]从 {targets_file} 读取到 {len(targets)} 个目标[/green]")
         
         scan_layers = [layer.strip() for layer in layers.split(',')]
@@ -564,11 +581,13 @@ def batch(targets_file, layers, max_concurrent, output_dir, verbose):
 @click.option('--port', type=int, default=8080, help='HTTP/Cursor模式监听端口')
 def server(mode, host, port):
     """启动MCP服务器"""
+    logger.info(f"CLI命令: server mode={mode}, host={host}, port={port}")
     console.print(f"[blue]启动MCP端口扫描服务器 ({mode}模式)...[/blue]")
     
     try:
         if mode == 'mcp':
             # 启动标准MCP stdio服务器
+            logger.info("启动标准MCP stdio服务器")
             from .mcp_server import main as mcp_main
             console.print("[green]✓[/green] 启动标准MCP协议服务器 (stdio模式)")
             asyncio.run(mcp_main())

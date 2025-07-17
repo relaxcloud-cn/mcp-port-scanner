@@ -11,6 +11,7 @@ from . import BaseAdapter
 from ..service import ScanService
 from ..models import ScanResult, ScanConfig, ScanTarget, ScanStatus
 from mcp.types import TextContent
+from ..logger_config import logger
 
 
 class MCPLocalAdapter(BaseAdapter):
@@ -18,6 +19,7 @@ class MCPLocalAdapter(BaseAdapter):
     
     def __init__(self, service: Optional[ScanService] = None):
         self.service = service or ScanService()
+        logger.debug("MCPLocalAdapter: 初始化完成")
     
     async def handle_request(self, request_data: Dict[str, Any]) -> ScanResult:
         """
@@ -52,6 +54,8 @@ class MCPLocalAdapter(BaseAdapter):
         scan_layers = arguments.get("scan_layers", ["port_scan", "http_detection", "web_probe"])
         config_dict = arguments.get("config", {})
         
+        logger.info(f"MCPLocalAdapter: 处理单目标扫描请求 - IP={ip}, ports={ports}")
+        
         # 更新配置
         if config_dict:
             current_config = self.service.get_config()
@@ -69,6 +73,8 @@ class MCPLocalAdapter(BaseAdapter):
         targets_data = arguments["targets"]
         scan_layers = arguments.get("scan_layers", ["port_scan", "http_detection", "web_probe"])
         max_concurrent = arguments.get("max_concurrent", 5)
+        
+        logger.info(f"MCPLocalAdapter: 处理批量扫描请求 - {len(targets_data)}个目标, 并发数={max_concurrent}")
         
         # 转换目标格式
         targets = []

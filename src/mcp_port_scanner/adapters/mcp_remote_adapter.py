@@ -12,6 +12,7 @@ import uuid
 from . import StreamingAdapter
 from ..service import ScanService, CallbackType, ScanProgress
 from ..models import ScanResult, ScanConfig, ScanTarget
+from ..logger_config import logger
 
 
 class MCPRemoteAdapter(StreamingAdapter):
@@ -21,6 +22,7 @@ class MCPRemoteAdapter(StreamingAdapter):
         self.service = service or ScanService()
         # 存储SSE连接的扫描任务
         self.sse_scans: Dict[str, asyncio.Task] = {}
+        logger.debug("MCPRemoteAdapter: 初始化完成")
     
     async def handle_request(self, request_data: Dict[str, Any]) -> Any:
         """
@@ -38,6 +40,8 @@ class MCPRemoteAdapter(StreamingAdapter):
         tool_name = request_data.get("tool_name")
         arguments = request_data.get("arguments", {})
         is_stream = request_data.get("stream", False)
+        
+        logger.info(f"MCPRemoteAdapter: 处理请求 - tool={tool_name}, stream={is_stream}")
         
         if is_stream:
             # 流式响应，返回扫描ID

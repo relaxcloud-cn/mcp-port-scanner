@@ -12,6 +12,7 @@ from typing import List, Optional
 from ..adapters.cli_adapter import CLIAdapter
 from ..service import ScanService
 from ..models import ScanConfig
+from ..logger_config import logger
 
 
 class CLIInterface:
@@ -26,6 +27,7 @@ class CLIInterface:
             rustscan_ulimit=8192,
             rustscan_ports="1-1000"
         )
+        logger.debug("CLIInterface: 初始化，使用极速配置 - timeout=200ms, batch_size=65535")
         self.service = ScanService(optimized_config)
         self.adapter = CLIAdapter(self.service)
     
@@ -35,6 +37,7 @@ class CLIInterface:
                          output_file: Optional[str] = None,
                          quiet: bool = False) -> None:
         """执行智能扫描"""
+        logger.info(f"CLIInterface: 执行扫描 - IP={ip}, ports={ports}, quiet={quiet}")
         try:
             # 显示扫描模式信息
             if not quiet:

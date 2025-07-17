@@ -16,6 +16,7 @@ from pydantic import BaseModel
 
 from .service import ScanService
 from .models import ScanConfig, ScanTarget, ScanResult, ScanStatus
+from .logger_config import logger
 
 
 class CursorScanRequest(BaseModel):
@@ -50,6 +51,7 @@ class CursorSSEAdapter:
         self.active_scans: Dict[str, ScanResult] = {}
         self.scan_services: Dict[str, ScanService] = {}
         
+        logger.info("CursorSSEAdapter: 初始化完成，启用CORS支持")
         self._setup_routes()
     
     def _setup_routes(self):
@@ -72,6 +74,7 @@ class CursorSSEAdapter:
         async def cursor_scan(request: CursorScanRequest):
             """Cursor优化的扫描接口"""
             scan_id = str(uuid.uuid4())
+            logger.info(f"CursorSSE: 收到扫描请求 - IP={request.ip}, ports={request.ports}, scan_id={scan_id}")
             
             # 创建配置
             config_dict = request.config or {}
@@ -92,6 +95,7 @@ class CursorSSEAdapter:
             self.scan_services[scan_id] = service
             
             # 启动后台扫描
+            logger.debug(f"CursorSSE: 启动后台扫描任务 - scan_id={scan_id}")
             asyncio.create_task(self._execute_scan(scan_id, service, request))
             
             return {
@@ -132,6 +136,7 @@ class CursorSSEAdapter:
     async def _execute_scan(self, scan_id: str, service: ScanService, request: CursorScanRequest):
         """执行扫描任务"""
         scan_result = self.active_scans[scan_id]
+        logger.info(f"CursorSSE: 开始执行扫描 - scan_id={scan_id}, target={request.ip}")
         
         try:
             scan_result.status = ScanStatus.RUNNING
@@ -151,7 +156,10 @@ class CursorSSEAdapter:
             scan_result.end_time = result.end_time
             scan_result.status = ScanStatus.COMPLETED
             
+            logger.info(f"CursorSSE: 扫描完成 - scan_id={scan_id}, 发现 {len(result.open_ports)} 个端口")
+            
         except Exception as e:
+            logger.error(f"CursorSSE: 扫描失败 - scan_id={scan_id}, error={e}", exc_info=True)
             scan_result.status = ScanStatus.FAILED
             scan_result.error_message = str(e)
             scan_result.end_time = datetime.now()
@@ -160,6 +168,7 @@ class CursorSSEAdapter:
             # 清理
             if scan_id in self.scan_services:
                 del self.scan_services[scan_id]
+                logger.debug(f"CursorSSE: 清理扫描服务 - scan_id={scan_id}")
     
     async def _generate_cursor_events(self, scan_id: str) -> AsyncGenerator[str, None]:
         """生成Cursor优化的SSE事件"""
@@ -168,6 +177,8 @@ class CursorSSEAdapter:
         last_ports_count = 0
         last_http_count = 0
         last_admin_count = 0
+        
+        logger.debug(f"CursorSSE: 开始生成SSE事件流 - scan_id={scan_id}")
         
         # 发送开始事件
         yield f"data: {json.dumps(self._cursor_event('start', {'scan_id': scan_id, 'target': scan_result.target.ip}))}\n\n"

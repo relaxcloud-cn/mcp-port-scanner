@@ -9,7 +9,7 @@ import json
 import re
 import os
 from typing import List, Optional, Dict, Any, Tuple
-from loguru import logger
+from .logger_config import logger
 import time
 
 from .models import PortInfo, ScanTarget, ScanConfig, ServiceProtocol
@@ -20,17 +20,8 @@ class PortScanner:
     
     def __init__(self, config: Optional[ScanConfig] = None):
         self.config = config or ScanConfig()
-        self._setup_logging()
-    
-    def _setup_logging(self) -> None:
-        """设置日志"""
-        if self.config.enable_logging and os.path.exists("/app/logs"):
-            logger.add(
-                "logs/port_scanner_{time}.log",
-                level=self.config.log_level,
-                rotation="1 day",
-                retention="7 days"
-            )
+        logger.debug("PortScanner 初始化完成，配置: timeout={}ms, batch_size={}", 
+                    self.config.rustscan_timeout, self.config.rustscan_batch_size)
     
     async def scan_target(self, target: ScanTarget, progress_callback: Optional[callable] = None) -> List[PortInfo]:
         """
