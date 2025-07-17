@@ -54,10 +54,10 @@ dev = [
 mcp-port-scanner = "mcp_port_scanner.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/sky/mcp-port-scanner"
-Repository = "https://github.com/sky/mcp-port-scanner"
-Documentation = "https://github.com/sky/mcp-port-scanner/blob/main/docs/README.md"
-"Bug Tracker" = "https://github.com/sky/mcp-port-scanner/issues"
+Homepage = "https://github.com/relaxcloud-cn/mcp-port-scanner"
+Repository = "https://github.com/relaxcloud-cn/mcp-port-scanner"
+Documentation = "https://github.com/relaxcloud-cn/mcp-port-scanner/blob/main/docs/README.md"
+"Bug Tracker" = "https://github.com/relaxcloud-cn/mcp-port-scanner/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

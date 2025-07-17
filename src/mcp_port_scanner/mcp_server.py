@@ -384,14 +384,56 @@ async def execute_scan(scan_result: ScanResult, scan_layers: List[str], config: 
         
         # 第一层：端口扫描
         if "port_scan" in scan_layers:
-            logger.info(f"执行端口扫描: {scan_result.target.ip}")
+            logger.info(f"🔍 执行常用端口扫描: {scan_result.target.ip}")
             port_infos = await scanner.scan_target(scan_result.target)
             
             for port_info in port_infos:
                 scan_result.add_port(port_info)
             
             scan_result.total_ports_scanned = len(port_infos)
-            logger.info(f"端口扫描完成: {scan_result.target.ip}，发现 {len(port_infos)} 个开放端口")
+            logger.info(f"📊 常用端口扫描完成: {scan_result.target.ip}，发现 {len(port_infos)} 个开放端口")
+            
+            # 🧠 智能扫描决策：根据流程图实现全端口扫描逻辑
+            if not scan_result.target.ports and config.smart_scan_enabled:  # 只有未指定端口时才进行智能决策
+                logger.info(f"🧠 智能扫描决策: 发现 {len(port_infos)} 个端口，阈值 {config.smart_scan_threshold}")
+                
+                if len(port_infos) < config.smart_scan_threshold:
+                    logger.info(f"🔥 触发全端口扫描: 端口数({len(port_infos)}) < 阈值({config.smart_scan_threshold})")
+                    logger.info(f"🚀 开始全端口深度扫描 (1-65535) - 可能有隐藏服务")
+                    
+                    # 创建全端口扫描目标
+                    full_target = ScanTarget(
+                        ip=scan_result.target.ip,
+                        ports=None  # 使用None让RustScan使用全端口范围
+                    )
+                    
+                    # 临时修改配置为全端口扫描
+                    original_ports = scanner.config.rustscan_ports
+                    scanner.config.rustscan_ports = "1-65535"
+                    
+                    try:
+                        # 执行全端口扫描
+                        full_port_infos = await scanner.scan_target(full_target)
+                        
+                        # 替换为全端口扫描结果
+                        scan_result.open_ports.clear()
+                        for port_info in full_port_infos:
+                            scan_result.add_port(port_info)
+                        
+                        scan_result.total_ports_scanned = len(full_port_infos)
+                        logger.info(f"🎉 全端口扫描完成: {scan_result.target.ip}，最终发现 {len(full_port_infos)} 个开放端口")
+                        
+                    finally:
+                        # 恢复原始配置
+                        scanner.config.rustscan_ports = original_ports
+                        
+                else:
+                    logger.info(f"⏭️ 跳过全端口扫描: 端口数({len(port_infos)}) >= 阈值({config.smart_scan_threshold}) - 已获得足够信息")
+            else:
+                if scan_result.target.ports:
+                    logger.info(f"🎯 指定端口扫描: 跳过智能决策")
+                else:
+                    logger.info(f"⚙️ 智能扫描已禁用")
         
         # 第二层：HTTP服务检测
         if "http_detection" in scan_layers and scan_result.open_ports:

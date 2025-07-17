@@ -220,9 +220,9 @@ class ScanConfig(BaseModel):
     )
     
     # RustScan配置 - 极速优化
-    rustscan_timeout: int = Field(default=500, description="RustScan超时时间(ms) - 极速模式")
+    rustscan_timeout: int = Field(default=30000, description="RustScan超时时间(ms) - 极速模式")
     rustscan_batch_size: int = Field(default=65535, description="RustScan批处理大小 - 最大并发")
-    rustscan_ports: str = Field(default="21-1000", description="RustScan扫描端口范围")
+    rustscan_ports: str = Field(default="1-65535", description="RustScan扫描端口范围")
     rustscan_tries: int = Field(default=1, description="RustScan重试次数")
     rustscan_ulimit: int = Field(default=8192, description="自动提升文件描述符限制")
     
