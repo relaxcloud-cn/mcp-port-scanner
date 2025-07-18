@@ -63,9 +63,11 @@ class MCPLocalServer:
                             },
                             "scan_layers": {
                                 "type": "array",
-                                "items": {"type": "string"},
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["port_scan", "http_detection", "web_probe"]
+                                },
                                 "description": "扫描层级（可选）",
-                                "enum": ["port_scan", "http_detection", "web_probe"],
                                 "default": ["port_scan", "http_detection", "web_probe"]
                             },
                             "config": {
@@ -106,8 +108,11 @@ class MCPLocalServer:
                             },
                             "scan_layers": {
                                 "type": "array",
-                                "items": {"type": "string"},
-                                "enum": ["port_scan", "http_detection", "web_probe"],
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["port_scan", "http_detection", "web_probe"]
+                                },
+                                "description": "扫描层级（可选）",
                                 "default": ["port_scan", "http_detection", "web_probe"]
                             },
                             "max_concurrent": {
@@ -191,8 +196,11 @@ class MCPLocalServer:
                             },
                             "scan_layers": {
                                 "type": "array",
-                                "items": {"type": "string"},
-                                "enum": ["port_scan", "http_detection", "web_probe"],
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["port_scan", "http_detection", "web_probe"]
+                                },
+                                "description": "扫描层级（可选）",
                                 "default": ["port_scan", "http_detection"]
                             }
                         },

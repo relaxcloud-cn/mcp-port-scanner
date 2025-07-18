@@ -6,6 +6,7 @@ services:
     volumes:
       - ./scan_results:/app/scan_results
       - ./config:/app/config
+      - ./logs:/app/logs
     environment:
       - PYTHONPATH=/app/src
       - LOG_LEVEL=INFO

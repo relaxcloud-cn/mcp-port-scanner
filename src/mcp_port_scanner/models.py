@@ -171,7 +171,7 @@ class ScanConfig(BaseModel):
     """扫描配置模型"""
     # 智能扫描模式配置
     smart_scan_enabled: bool = Field(default=True, description="是否启用智能扫描模式")
-    smart_scan_threshold: int = Field(default=10, description="智能扫描端口阈值，小于此值执行全端口扫描")
+    smart_scan_threshold: int = Field(default=3, description="智能扫描端口阈值，小于此值执行全端口扫描")
     
     # 预设端口配置
     preset_ports: List[int] = Field(
