@@ -14,6 +14,12 @@ services:
     restart: unless-stopped
     networks:
       - scanner-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "from src.mcp_port_scanner.rustscan_manager import get_rustscan_manager; manager = get_rustscan_manager(); verified, _ = manager.verify_rustscan(); exit(0 if verified else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   # MCP SSE服务器 - 将stdio MCP转换为HTTP/SSE接口
   mcp-port-scanner-sse:
@@ -52,6 +58,18 @@ services:
       - scanner-network
     profiles: 
       - tools  # 可选服务，使用 --profile tools 启动
+
+  # RustScan 验证服务 - 验证 RustScan 安装状态
+  rustscan-validator:
+    build: .
+    container_name: rustscan-validator
+    environment:
+      - PYTHONPATH=/app/src
+    command: python -m mcp_port_scanner.interfaces.cli_interface rustscan
+    networks:
+      - scanner-network
+    profiles:
+      - tools  # 可选服务，用于验证 RustScan 状态
 
 networks:
   scanner-network:
