@@ -114,40 +114,6 @@ flowchart TD
     style RESULT fill:#fafafa
 ```
 
-## 🚀 快速开始
-
-### 一键安装（推荐）
-
-```bash
-# 克隆项目
-git clone https://github.com/relaxcloud-cn/port-scanner.git
-cd mcp-port-scanner
-
-# 一键安装（自动下载 RustScan）
-bash scripts/setup.sh
-```
-
-### 手动安装
-
-```bash
-# 安装 Python 依赖
-pip install -r requirements.txt
-
-# 自动下载 RustScan（推荐）
-python scripts/download_rustscan.py
-
-# 或使用系统包管理器安装 RustScan
-# macOS
-brew install rustscan
-
-# Linux
-wget https://github.com/RustScan/RustScan/releases/download/2.0.1/rustscan_2.0.1_amd64.deb
-sudo dpkg -i rustscan_2.0.1_amd64.deb
-
-# 验证安装
-python -m mcp_port_scanner.interfaces.cli_interface rustscan
-```
-
 ### Docker快速启动
 
 ```bash
