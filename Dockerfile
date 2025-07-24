@@ -12,10 +12,11 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装RustScan（可选，如果安装失败会回退到socket扫描）
-RUN wget https://github.com/RustScan/RustScan/releases/download/2.0.1/rustscan_2.0.1_amd64.deb \
-    && (dpkg -i rustscan_2.0.1_amd64.deb || echo "RustScan安装失败，将使用socket扫描") \
-    && rm -f rustscan_2.0.1_amd64.deb
+# 复制 RustScan 二进制文件（已在本地 bin/ 目录）
+COPY bin/ bin/
+
+# 赋予可执行权限（Linux下）
+RUN chmod +x bin/rustscan-*
 
 # 复制项目文件
 COPY pyproject.toml .

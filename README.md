@@ -116,24 +116,36 @@ flowchart TD
 
 ## 🚀 快速开始
 
-### 环境准备
+### 一键安装（推荐）
 
 ```bash
 # 克隆项目
 git clone https://github.com/relaxcloud-cn/port-scanner.git
 cd mcp-port-scanner
 
-# 安装Python依赖
-pip install -r requirements.txt
-pip install mcp
+# 一键安装（自动下载 RustScan）
+bash scripts/setup.sh
+```
 
-# 安装RustScan（必需）
+### 手动安装
+
+```bash
+# 安装 Python 依赖
+pip install -r requirements.txt
+
+# 自动下载 RustScan（推荐）
+python scripts/download_rustscan.py
+
+# 或使用系统包管理器安装 RustScan
 # macOS
 brew install rustscan
 
 # Linux
 wget https://github.com/RustScan/RustScan/releases/download/2.0.1/rustscan_2.0.1_amd64.deb
 sudo dpkg -i rustscan_2.0.1_amd64.deb
+
+# 验证安装
+python -m mcp_port_scanner.interfaces.cli_interface rustscan
 ```
 
 ### Docker快速启动
@@ -154,14 +166,20 @@ docker-compose ps
 ### 1. 命令行模式
 
 ```bash
+# 检查 RustScan 状态
+python -m mcp_port_scanner.interfaces.cli_interface rustscan
+
 # 扫描单个目标
-python -m mcp_port_scanner scan 192.168.1.1
+python -m mcp_port_scanner.interfaces.cli_interface scan 192.168.1.1
 
 # 扫描指定端口
-python -m mcp_port_scanner scan 192.168.1.1 -p 80,443,8080
+python -m mcp_port_scanner.interfaces.cli_interface scan 192.168.1.1 -p 80,443,8080
 
 # 批量扫描
-python -m mcp_port_scanner batch 192.168.1.1 192.168.1.2 192.168.1.3
+python -m mcp_port_scanner.interfaces.cli_interface batch 192.168.1.1 192.168.1.2 192.168.1.3
+
+# 查看帮助
+python -m mcp_port_scanner.interfaces.cli_interface --help
 ```
 
 ### 2. MCP Server模式

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-port-scanner"
-version = "0.1.0"
+version = "0.1.1"
 description = "一个基于MCP协议的智能分层端口扫描服务，专为AI助手和开发工具设计。"
 authors = [
     {name = "Sky", email = "sky@example.com"}

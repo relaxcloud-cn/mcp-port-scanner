@@ -13,6 +13,7 @@ from ..adapters.cli_adapter import CLIAdapter
 from ..service import ScanService
 from ..models import ScanConfig
 from ..logger_config import logger
+from ..rustscan_manager import get_rustscan_manager
 
 
 class CLIInterface:
@@ -30,6 +31,7 @@ class CLIInterface:
         logger.debug("CLIInterface: 初始化，使用极速配置 - timeout=200ms, batch_size=65535")
         self.service = ScanService(optimized_config)
         self.adapter = CLIAdapter(self.service)
+        self.rustscan_manager = get_rustscan_manager()
     
     async def scan_simple(self, 
                          ip: str,
@@ -70,6 +72,53 @@ class CLIInterface:
                 
         except Exception as e:
             self.adapter.format_error(e)
+    
+    def check_rustscan_status(self) -> None:
+        """检查 RustScan 安装状态"""
+        status = self.rustscan_manager.check_installation()
+        
+        click.echo("🔍 RustScan 安装状态检查")
+        click.echo("=" * 50)
+        
+        # 基本信息
+        click.echo(f"🖥️  平台: {status['platform']}")
+        click.echo(f"📁 二进制目录: {status['bin_dir']}")
+        click.echo()
+        
+        # 本地安装状态
+        if status['local_available']:
+            click.echo(f"✅ 本地安装: {status['local_path']}")
+        else:
+            click.echo("❌ 本地安装: 未找到")
+        
+        # 系统安装状态
+        if status['system_available']:
+            click.echo(f"✅ 系统安装: {status['system_path']}")
+        else:
+            click.echo("❌ 系统安装: 未找到")
+        
+        click.echo()
+        
+        # 当前使用状态
+        if status['current_path']:
+            click.echo(f"🎯 当前使用: {status['current_path']}")
+            
+            if status['verified']:
+                click.echo(f"✅ 验证状态: {status['version']}")
+            else:
+                click.echo(f"❌ 验证失败: {status['version']}")
+        else:
+            click.echo("❌ 当前使用: 无可用的 RustScan")
+        
+        click.echo()
+        
+        # 建议
+        if status['suggestions']:
+            click.echo("💡 建议:")
+            for suggestion in status['suggestions']:
+                click.echo(f"   {suggestion}")
+        else:
+            click.echo("🎉 RustScan 已正确安装并可用！")
 
 
 # CLI命令定义
@@ -228,6 +277,18 @@ def info():
 
 
 @cli.command()
+def rustscan():
+    """检查 RustScan 安装状态
+    
+    检查本地和系统 RustScan 安装情况，提供安装建议。
+    
+    示例:
+      scan rustscan              # 检查安装状态
+    """
+    cli_interface.check_rustscan_status()
+
+
+@cli.command()
 @click.option('--rustscan-timeout', type=int, help='RustScan超时(毫秒)')
 @click.option('--http-timeout', type=float, help='HTTP超时(秒)')
 @click.option('--admin-scan/--no-admin-scan', default=None, help='启用/禁用管理扫描')
@@ -271,6 +332,12 @@ def config(rustscan_timeout, http_timeout, admin_scan):
         click.echo(f"  RustScan超时: {current_config.rustscan_timeout}ms")
         click.echo(f"  HTTP超时: {current_config.http_timeout}s")
         click.echo(f"  管理扫描: {'启用' if current_config.admin_scan_enabled else '禁用'}")
+
+
+@cli.command()
+def check_rustscan():
+    """检查 RustScan 安装状态"""
+    cli_interface.check_rustscan_status()
 
 
 def main():

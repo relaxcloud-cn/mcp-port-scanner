@@ -8,7 +8,7 @@ MCP智能分层端口扫描服务
 3. HTTP服务深度探测 + 管理目录扫描
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Sky"
 __email__ = "sky@example.com"
 
@@ -25,6 +25,9 @@ from .service import (
     ScanService, ScanProgress, CallbackType,
     get_default_service, scan, batch_scan, scan_async, batch_scan_async
 )
+
+# RustScan 管理器
+from .rustscan_manager import RustScanManager, get_rustscan_manager
 
 # 数据模型
 from .models import (
@@ -47,6 +50,10 @@ __all__ = [
     "batch_scan", 
     "scan_async",
     "batch_scan_async",
+    
+    # RustScan 管理器
+    "RustScanManager",
+    "get_rustscan_manager",
     
     # 数据模型
     "ScanTarget",

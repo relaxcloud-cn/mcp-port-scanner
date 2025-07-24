@@ -13,6 +13,7 @@ from .logger_config import logger
 import time
 
 from .models import PortInfo, ScanTarget, ScanConfig, ServiceProtocol
+from .rustscan_manager import get_rustscan_manager
 
 
 class PortScanner:
@@ -20,6 +21,16 @@ class PortScanner:
     
     def __init__(self, config: Optional[ScanConfig] = None):
         self.config = config or ScanConfig()
+        self.rustscan_manager = get_rustscan_manager()
+        
+        # 验证 RustScan 可用性
+        verified, version_info = self.rustscan_manager.verify_rustscan()
+        if verified:
+            logger.info(f"RustScan 初始化成功: {version_info}")
+        else:
+            logger.warning(f"RustScan 初始化失败: {version_info}")
+            logger.info("将回退到 Python socket 扫描")
+        
         logger.debug("PortScanner 初始化完成，配置: timeout={}ms, batch_size={}", 
                     self.config.rustscan_timeout, self.config.rustscan_batch_size)
     
@@ -103,7 +114,8 @@ class PortScanner:
             return sorted(list(set(all_open_ports)))  # 去重并排序
                 
         except FileNotFoundError:
-            logger.warning("RustScan未找到，回退到Python socket扫描")
+            logger.warning("RustScan二进制文件未找到，回退到Python socket扫描")
+            logger.info(self.rustscan_manager.install_suggestions())
             return await self._socket_scan_ports(target)
         except Exception as e:
             logger.error(f"RustScan扫描失败: {e}")
@@ -113,17 +125,18 @@ class PortScanner:
         """
         执行单个端口范围的RustScan扫描
         """
-        cmd = [
-            "rustscan",
-            "-a", target.ip,
-            "-t", str(self.config.rustscan_timeout),
-            "-b", str(self.config.rustscan_batch_size),
-            "--tries", str(self.config.rustscan_tries),
-            "--ulimit", str(self.config.rustscan_ulimit),
-            "--scan-order", "serial",
-            "-g",  # greppable输出
-            "-r", port_range  # 端口范围
-        ]
+        try:
+            cmd = self.rustscan_manager.get_command_args(
+                target.ip,
+                timeout=self.config.rustscan_timeout,
+                batch_size=self.config.rustscan_batch_size,
+                tries=self.config.rustscan_tries,
+                ulimit=self.config.rustscan_ulimit,
+                port_range=port_range
+            )
+        except FileNotFoundError as e:
+            logger.error(f"构建RustScan命令失败: {e}")
+            raise
         
         # 执行命令
         process = await asyncio.create_subprocess_exec(
@@ -174,20 +187,18 @@ class PortScanner:
         """
         执行具体端口列表的RustScan扫描
         """
-        cmd = [
-            "rustscan",
-            "-a", target.ip,
-            "-t", str(self.config.rustscan_timeout),
-            "-b", str(self.config.rustscan_batch_size),
-            "--tries", str(self.config.rustscan_tries),
-            "--ulimit", str(self.config.rustscan_ulimit),
-            "--scan-order", "serial",
-            "-g",  # greppable输出
-        ]
-        
-        # 添加端口列表
-        ports_str = ",".join(map(str, ports))
-        cmd.extend(["-p", ports_str])
+        try:
+            cmd = self.rustscan_manager.get_command_args(
+                target.ip,
+                timeout=self.config.rustscan_timeout,
+                batch_size=self.config.rustscan_batch_size,
+                tries=self.config.rustscan_tries,
+                ulimit=self.config.rustscan_ulimit,
+                ports=ports
+            )
+        except FileNotFoundError as e:
+            logger.error(f"构建RustScan命令失败: {e}")
+            raise
         
         logger.info(f"💨 RustScan极速配置: timeout={self.config.rustscan_timeout}ms, batch={self.config.rustscan_batch_size}")
         
