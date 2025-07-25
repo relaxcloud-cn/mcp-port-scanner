@@ -154,3 +154,117 @@ A: 可以通过 .dxtignore 文件排除不必要的文件，或者使用更激�
 - [DXT 官方文档](https://github.com/anthropics/dxt)
 - [MCP 协议规范](https://modelcontextprotocol.io)
 - [项目主页](https://github.com/relaxcloud-cn/mcp-port-scanner) 
+
+## 附录：DXT扩展签名完整指南
+
+### 什么是数字签名？
+
+数字签名是一种加密技术，用于验证文件的完整性和来源可信度：
+
+1. **身份验证**：确认文件确实来自声称的发布者
+2. **完整性验证**：确保文件没有被篡改
+3. **不可否认性**：发布者无法否认签名的文件
+
+### 签名类型
+
+#### 开发测试签名（自签名）
+```bash
+# 仅用于开发和本地测试
+dxt sign mcp-port-scanner-0.1.1.dxt --self-signed
+```
+
+#### 生产发布签名（证书签名）
+```bash
+# 使用正式证书签名
+dxt sign mcp-port-scanner-0.1.1.dxt --certificate cert.p12 --password "password"
+```
+
+### 获取代码签名证书
+
+#### 推荐证书提供商
+1. **DigiCert** - 业界标准（$400-600/年）
+2. **Sectigo** - 性价比高（$200-400/年）
+3. **GlobalSign** - 国际认可（$300-500/年）
+4. **SSL.com** - 价格适中（$150-300/年）
+
+#### 申请材料准备
+**个人开发者：**
+- 身份证明文件
+- 地址证明
+- 电话验证
+
+**企业开发者：**
+- 营业执照
+- 企业验证文件
+- 授权人身份证明
+
+### 签名操作步骤
+
+#### 1. 生成证书签名请求(CSR)
+```bash
+openssl req -new -newkey rsa:2048 -nodes -keyout private.key -out certificate.csr
+```
+
+#### 2. 获得证书后安装
+```bash
+# Windows：双击.p12文件安装
+# macOS：添加到钥匙串
+# Linux：使用openssl转换
+```
+
+#### 3. 正式签名
+```bash
+# 使用证书文件
+dxt sign mcp-port-scanner-0.1.1.dxt \
+  --certificate /path/to/cert.p12 \
+  --password "cert-password" \
+  --timestamp-url "http://timestamp.digicert.com"
+
+# Windows系统证书存储
+dxt sign mcp-port-scanner-0.1.1.dxt --thumbprint "证书指纹"
+
+# macOS钥匙串
+dxt sign mcp-port-scanner-0.1.1.dxt --identity "Developer ID Application: Your Name"
+```
+
+#### 4. 验证签名
+```bash
+# 验证签名有效性
+dxt verify mcp-port-scanner-0.1.1.dxt
+
+# 查看详细信息
+dxt info mcp-port-scanner-0.1.1.dxt
+```
+
+### 时间戳服务
+
+为确保签名长期有效，建议使用时间戳服务：
+
+```bash
+# 常用时间戳服务器
+--timestamp-url "http://timestamp.digicert.com"
+--timestamp-url "http://time.certum.pl"
+--timestamp-url "http://timestamp.comodoca.com"
+```
+
+### 签名验证检查清单
+
+- [ ] 证书有效期内
+- [ ] 证书链完整
+- [ ] 时间戳正确
+- [ ] 跨平台验证通过
+- [ ] 在Claude Desktop中安装无警告
+
+### 常见签名问题
+
+**Q: 签名后仍显示"未签名"？**
+A: 检查证书是否正确安装，时间戳是否添加
+
+**Q: 不同平台签名验证失败？**
+A: 确保使用了跨平台兼容的证书格式
+
+**Q: 证书过期怎么办？**
+A: 重新申请证书并重新签名，时间戳可保证旧签名有效
+
+**Q: 企业环境要求特定证书？**
+A: 联系IT部门获取企业认可的证书颁发机构列表 
