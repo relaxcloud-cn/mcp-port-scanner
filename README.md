@@ -185,21 +185,32 @@ python -m mcp_port_scanner.interfaces.cli_interface --help
 ```
 
 **本地Python环境：**
+
+> **⚠️ 前置条件：**
+> 1. 安装项目依赖：`pip install -r requirements.txt`
+> 2. 确保bin/目录下有对应平台的RustScan二进制文件
+> 3. 或系统已安装RustScan（`sudo apt install rustscan` 或 `brew install rustscan`）
+
 ```json
 {
   "mcpServers": {
     "port-scanner-local": {
       "command": "python",
       "args": ["-m", "mcp_port_scanner.interfaces.mcp_local_server"],
-      "cwd": "/path/to/mcp-port-scanner",
+      "cwd": "./mcp-port-scanner",
       "env": {
         "PYTHONPATH": "src"
       },
-      "description": "本地新版本MCP服务器"
+      "description": "本地MCP服务器 - 7个工具，智能扫描策略"
     }
   }
 }
 ```
+
+**路径配置说明：**
+- 推荐使用相对路径：`"./mcp-port-scanner"`（相对于Cursor工作目录）
+- 或使用绝对路径：`"/path/to/your/mcp-port-scanner"`
+- Windows示例：`"C:/Users/YourName/Projects/mcp-port-scanner"`
 
 **SSE模式（支持远程访问）：**
 ```json
@@ -211,6 +222,30 @@ python -m mcp_port_scanner.interfaces.cli_interface --help
   }
 }
 ```
+
+### **📋 本地MCP Server快速验证**
+
+完成配置后，可以通过以下方式验证MCP服务器是否正常工作：
+
+```bash
+# 1. 切换到项目目录
+cd ./mcp-port-scanner 
+
+# 2. 设置环境变量
+export PYTHONPATH=src  # Linux/macOS
+# 或 Windows PowerShell：$env:PYTHONPATH="src"
+
+# 3. 手动启动MCP服务器测试
+python -m mcp_port_scanner.interfaces.mcp_local_server
+
+# 4. 检查RustScan状态
+python -c "from src.mcp_port_scanner.rustscan_manager import get_rustscan_manager; print(get_rustscan_manager().verify_rustscan())"
+```
+
+**如果遇到问题：**
+- 确认依赖已安装：`pip list | grep mcp`
+- 检查RustScan：`bin/rustscan-windows-x64.exe --version`（Windows）
+- 查看日志：检查`logs/`目录下的日志文件
 
 推荐使用 `prompt.md` 作为AI助手的系统提示词，获得专业的网络安全分析能力。
 
