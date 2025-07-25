@@ -1,0 +1,134 @@
+{
+  "dxt_version": "0.1",
+  "name": "mcp-port-scanner",
+  "display_name": "MCP Port Scanner",
+  "version": "0.1.1",
+  "description": "基于MCP协议的智能分层端口扫描服务，集成RustScan高性能扫描引擎",
+  "long_description": "一个基于MCP协议的智能分层端口扫描服务，专为AI助手和开发工具设计。通过集成高性能的RustScan引擎，提供快速、准确的端口扫描功能。支持多种扫描策略、服务识别和Web服务探测。",
+  "author": {
+    "name": "Sky",
+    "email": "sky@example.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/relaxcloud-cn/mcp-port-scanner"
+  },
+  "homepage": "https://github.com/relaxcloud-cn/mcp-port-scanner",
+  "documentation": "https://github.com/relaxcloud-cn/mcp-port-scanner/blob/main/docs/README.md",
+  "support": "https://github.com/relaxcloud-cn/mcp-port-scanner/issues",
+  "keywords": ["port-scanner", "mcp", "security", "network", "scanner", "rustscan", "ai"],
+  "license": "MIT",
+  "server": {
+    "type": "python",
+    "entry_point": "server/src/mcp_port_scanner/interfaces/mcp_local_server.py",
+    "mcp_config": {
+      "command": "python",
+      "args": ["-m", "mcp_port_scanner.interfaces.mcp_local_server"],
+      "env": {
+        "PYTHONPATH": "${__dirname}/server/lib:${__dirname}/server/src",
+        "LOG_LEVEL": "${user_config.log_level}",
+        "LOG_FILE": "${user_config.log_file}",
+        "LOG_DETAILED": "${user_config.log_detailed}"
+      },
+      "platform_overrides": {
+        "win32": {
+          "env": {
+            "PYTHONPATH": "${__dirname}/server/lib;${__dirname}/server/src",
+            "RUSTSCAN_PATH": "${__dirname}/server/bin/rustscan-windows-x64.exe"
+          }
+        },
+        "darwin": {
+          "env": {
+            "RUSTSCAN_PATH": "${__dirname}/server/bin/rustscan-macos-${process.arch}"
+          }
+        },
+        "linux": {
+          "env": {
+            "RUSTSCAN_PATH": "${__dirname}/server/bin/rustscan-linux-x64"
+          }
+        }
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "scan_port",
+      "description": "扫描指定主机的端口"
+    },
+    {
+      "name": "scan_service",
+      "description": "扫描并识别服务信息"
+    },
+    {
+      "name": "quick_scan",
+      "description": "快速扫描常用端口"
+    },
+    {
+      "name": "batch_scan",
+      "description": "批量扫描多个主机"
+    },
+    {
+      "name": "probe_web_service",
+      "description": "探测Web服务信息"
+    },
+    {
+      "name": "get_scan_status",
+      "description": "获取扫描任务状态"
+    },
+    {
+      "name": "cancel_scan",
+      "description": "取消扫描任务"
+    },
+    {
+      "name": "list_scans",
+      "description": "列出所有扫描任务"
+    }
+  ],
+  "tools_generated": false,
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "python": ">=3.8,<4.0"
+    }
+  },
+  "user_config": {
+    "log_level": {
+      "type": "string",
+      "title": "日志级别",
+      "description": "设置日志输出级别",
+      "default": "INFO",
+      "required": false
+    },
+    "log_file": {
+      "type": "string",
+      "title": "日志文件路径",
+      "description": "日志文件保存路径（留空则只输出到控制台）",
+      "default": "",
+      "required": false
+    },
+    "log_detailed": {
+      "type": "boolean",
+      "title": "详细日志",
+      "description": "是否输出详细的调试日志",
+      "default": false,
+      "required": false
+    },
+    "scan_results_dir": {
+      "type": "directory",
+      "title": "扫描结果目录",
+      "description": "保存扫描结果的目录",
+      "default": "${HOME}/mcp-port-scanner-results",
+      "required": false
+    },
+    "max_concurrent_scans": {
+      "type": "number",
+      "title": "最大并发扫描数",
+      "description": "同时进行的最大扫描任务数",
+      "default": 5,
+      "min": 1,
+      "max": 20,
+      "required": false
+    }
+  }
+} 

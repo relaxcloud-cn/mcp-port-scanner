@@ -1,0 +1,52 @@
+# DXT打包时忽略的文件和目录
+
+# Python相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 开发相关
+.git/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 项目特定
+/scan_results/
+/logs/
+/examples/
+/docs/
+/test/
+/tests/
+*.test.py
+*_test.py
+
+# Docker相关
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 构建和配置
+/scripts/
+pyproject.toml
+requirements.txt
+CONTRIBUTING.md
+CHANGELOG.md
+.github/
+.gitignore
+prompt.md
+cursor-mcp-config.json
+
+# 临时文件
+*.tmp
+*.log
+.DS_Store
+Thumbs.db 
