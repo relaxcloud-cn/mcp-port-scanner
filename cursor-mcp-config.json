@@ -17,6 +17,15 @@
       "url": "http://YOUR_SERVER_IP:3000/mcp",
       "description": "通过StreamableHTTP协议访问端口扫描服务 - 推荐方式",
       "env": {}
+    },
+    "port-scanner": {
+      "command": "python",
+      "args": ["-m", "mcp_port_scanner.interfaces.mcp_local_server"],
+      "cwd": "./mcp-port-scanner",
+      "env": {
+        "PYTHONPATH": "src"
+      },
+      "description": "智能端口扫描器 - 7个工具，支持分层扫描策略"
     }
   }
 } 
